@@ -54,7 +54,7 @@ Monitoring is wired via Prometheus ServiceMonitors and PrometheusRules with aler
 
 ### Key Paths
 
-- `01-payments-api-failure/CLAUDE.md` -- context given to the AI assistant performing the investigation (not a dev guide)
+- `01-payments-api-failure/README.md` -- scenario overview and components
 - `01-payments-api-failure/manifests/payments/` -- Kubernetes manifests for the payments namespace
 - `01-payments-api-failure/manifests/shared-services/` -- Kubernetes manifests for the shared-services namespace
 - `01-payments-api-failure/scripts/` -- shell scripts that implement each Make target
@@ -74,7 +74,7 @@ Monitoring is wired via Prometheus ServiceMonitors and PrometheusRules with aler
 
 ### Key Paths
 
-- `02-alert-storm/CLAUDE.md` -- context given to the AI assistant performing the investigation
+- `02-alert-storm/README.md` -- scenario overview and components
 - `02-alert-storm/manifests/` -- Kubernetes manifests (namespace, deployments, ServiceMonitors, PrometheusRules)
 - `02-alert-storm/manifests/configmaps/` -- healthy and broken ConfigMap variants
 - `02-alert-storm/scripts/` -- shell scripts that implement each Make target
