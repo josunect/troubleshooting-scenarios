@@ -124,7 +124,7 @@ mcp-config: ## Rebuild mcp-config ConfigMap and restart the pod if already runni
 	done; \
 	unset IFS; \
 	ts="$$ts]"; \
-	printf 'toolsets = %s\nlog_level = 0\nport = "8080"\nread_only = false\n' "$$ts" > /tmp/_mcp-config.toml; \
+	printf 'toolsets = %s\nlog_level = 0\nport = "8080"\n' "$$ts" > /tmp/_mcp-config.toml; \
 	if printf '%s' ",$$additional," | grep -q ",ossm,"; then \
 	  printf '\n[toolset_configs.kiali]\nurl = "https://kiali.%s:20001/"\ninsecure = true\n' "$$istio_ns" >> /tmp/_mcp-config.toml; \
 	fi; \
