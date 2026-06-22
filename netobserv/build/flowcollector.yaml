@@ -5,7 +5,7 @@
 #   - privileged: true + all eBPF features used by eval scenarios
 #   - networkPolicy.additionalNamespaces: openshift-mcp + kubernetes-mcp-server (both MCP deploy paths)
 #
-# Requires: NetObserv operator + Loki (USER=netobserv make deploy deploy-loki in netobserv-operator).
+# Requires: NetObserv operator only — Loki is deployed by the operator via installDemoLoki.
 # NetworkEvents requires OpenShift 4.19+.
 apiVersion: flows.netobserv.io/v1beta2
 kind: FlowCollector
@@ -41,7 +41,7 @@ spec:
     enable: true
     mode: Monolithic
     monolithic:
-      url: http://loki.netobserv.svc.cluster.local.:3100/
+      installDemoLoki: true
   prometheus:
     querier:
       enable: true

@@ -9,6 +9,8 @@
 #   make ols-port-forward   # https://localhost:8443
 # ──────────────────────────────────────────────────────────────────────────────
 
+include build/netobserv.mk
+
 EVALS = ./evals.yaml
 RESULTS_DIR = ./results
 SYSTEM_CONFIG_SRC = ./system.yaml
@@ -60,9 +62,7 @@ ols-port-forward: ## Forward in-cluster OLS (HTTPS 8443) to localhost:$(OLS_PORT
 	oc port-forward -n $(OLS_NS) deployment/lightspeed-app-server $(OLS_PORT):8443
 
 .PHONY: deploy-flowcollector
-deploy-flowcollector: ## Apply eval FlowCollector (sampling 1, features, MCP network policy)
-	oc apply -f build/flowcollector.yaml
-	oc wait flowcollector/cluster --for=condition=Ready --timeout=10m
+deploy-flowcollector: netobserv-install-flowcollector ## Apply eval FlowCollector (alias for netobserv-install-flowcollector)
 
 .PHONY: test dns_latency-test dns_nxdomain-test packet_drops_kernel-test \
         packet_drops_policy-test tls_issues-test tcp_rtt-test

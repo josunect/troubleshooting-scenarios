@@ -6,18 +6,25 @@ Evaluation scenarios that test how well an AI assistant — backed by the OpenSh
 
 ## Prerequisites
 
-### 1. Cluster login and NetObserv
+### 1. Cluster login
 
-You must be logged in to a running OpenShift cluster with NetObserv installed (`FlowCollector` named `cluster`, Ready).
+You must be logged in to a running OpenShift cluster.
 
 ```bash
 oc login <cluster-api-url>
-oc get flowcollector cluster
 ```
 
-If NetObserv is not installed yet, follow [`build/README.md`](build/README.md).
+### 2. NetObserv operator and FlowCollector
 
-### 2. MCP server with NetObserv toolset
+All scenarios assume NetObserv is installed and `FlowCollector/cluster` is Ready. See [`build/README.md`](build/README.md) for a full description of every step and all available variables.
+
+```bash
+make setup-netobserv-openshift
+```
+
+Installs the NetObserv operator via OLM, applies [`build/flowcollector.yaml`](build/flowcollector.yaml) (a `FlowCollector` tuned for these scenarios — sampling 1, eBPF features, MCP network policy; `installDemoLoki: true` deploys Loki), and waits for `FlowCollector/cluster` Ready.
+
+### 3. MCP server with NetObserv toolset
 
 Same path as [kiali-ossm](../kiali-ossm/README.md): deploy **openshift-mcp-server** from the repository root with the `netobserv` toolset enabled:
 
@@ -28,7 +35,7 @@ make connect-ols-mcp
 
 See the root [README](../README.md#openshift-mcp-server-setup). To test an upstream PR before the toolset ships in openshift-mcp-server, use `make setup-kubernetes-mcp` with `KUBERNETES_MCP_IMAGE` — see [`build/README.md`](build/README.md).
 
-### 3. OpenShift Lightspeed (OLS)
+### 4. OpenShift Lightspeed (OLS)
 
 Evals call OLS `/v1/query`. The operator serves **HTTPS on port 8443** inside the pod (`lightspeed-service-api`, container port `https`) — not HTTP on 8080.
 
@@ -150,7 +157,7 @@ The judge LLM requires an OpenAI API key. Export it before running any test targ
 export OPENAI_API_KEY=<your-key>
 ```
 
-Then run scenarios from this directory (with OLS reachable — see [Prerequisites §3](README.md#3-openshift-lightspeed-ols)):
+Then run scenarios from this directory (with OLS reachable — see [Prerequisites §4](README.md#4-openshift-lightspeed-ols)):
 
 ```bash
 make test              # all scenarios
