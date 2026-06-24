@@ -83,6 +83,8 @@ spec:
     targetPort: 8080
 EOF
 
+oc rollout status deployment/${MCP_DEPLOYMENT} -n ${MCP_NS} --timeout=120s
+
 echo ""
 echo "==> MCP server ready in ${MCP_NS}"
 echo "==> In-cluster: http://${MCP_DEPLOYMENT}.${MCP_NS}.svc.cluster.local:8080/mcp"
