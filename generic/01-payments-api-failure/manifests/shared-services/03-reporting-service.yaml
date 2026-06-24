@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,7 +39,7 @@ spec:
             - name: PGHOST
               value: postgres
             - name: PGPORT
-              value: "5432"
+              value: '5432'
             - name: PGDATABASE
               value: demo
 ---

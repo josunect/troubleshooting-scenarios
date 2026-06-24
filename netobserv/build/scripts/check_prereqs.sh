@@ -106,8 +106,8 @@ patch_openshift_deployments() {
       esac
       oc patch deploy "${deploy}" -n "${ns}" --type=json \
         -p="[{\"op\":\"add\",\"path\":\"/spec/template/spec/containers/${i}/securityContext/runAsUser\",\"value\":${uid_min}}]" \
-        2>/dev/null \
-        || oc patch deploy "${deploy}" -n "${ns}" --type=json \
+        2>/dev/null ||
+        oc patch deploy "${deploy}" -n "${ns}" --type=json \
           -p="[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/${i}/securityContext/runAsUser\",\"value\":${uid_min}}]"
       i=$((i + 1))
     done
@@ -117,8 +117,7 @@ patch_openshift_deployments() {
 wait_for_namespace_gone() {
   local ns="$1"
   local max_attempts="${2:-90}"
-  local attempt
-  for attempt in $(seq 1 "${max_attempts}"); do
+  for _ in $(seq 1 "${max_attempts}"); do
     if ! oc get namespace "${ns}" >/dev/null 2>&1; then
       return 0
     fi
@@ -141,8 +140,7 @@ deploy_netobserv_fixture() {
 
   oc apply -f "${fixture_dir}/manifest.yaml"
 
-  local attempt
-  for attempt in $(seq 1 15); do
+  for _ in $(seq 1 15); do
     if openshift_namespace_uid_min "${ns}" >/dev/null 2>&1; then
       break
     fi

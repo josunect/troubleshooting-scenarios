@@ -26,23 +26,27 @@ GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 while [ $# -gt 0 ]; do
   key="$1"
   case $key in
-    -div|--dev-istio-version)
+    -div | --dev-istio-version)
       DEV_ISTIO_VERSION="$2"
-      shift;shift
+      shift
+      shift
       ;;
-    -iv|--istio-version)
+    -iv | --istio-version)
       ISTIO_VERSION="$2"
-      shift;shift
+      shift
+      shift
       ;;
-    -o|--output)
+    -o | --output)
       OUTPUT_DIR="$2"
-      shift;shift
+      shift
+      shift
       ;;
-    -gt|--github-token)
+    -gt | --github-token)
       GITHUB_TOKEN="$2"
-      shift;shift
+      shift
+      shift
       ;;
-    -h|--help)
+    -h | --help)
       cat <<HELPMSG
 Valid command line arguments:
   -div|--dev-istio-version <version>: If you want a dev version to download, use this option and do not use -iv.
@@ -116,17 +120,17 @@ if [ -z "${ISTIO_VERSION}" ]; then
         elif [ -n "${RATELIMIT_RESET}" ] && [ "${RATELIMIT_REMAINING}" = "0" ]; then
           # Calculate time until rate limit reset
           CURRENT_TIME=$(date +%s)
-          WAIT_TIME=$((RATELIMIT_RESET - CURRENT_TIME + 5))  # Add 5 second buffer
+          WAIT_TIME=$((RATELIMIT_RESET - CURRENT_TIME + 5)) # Add 5 second buffer
           if [ $WAIT_TIME -lt 0 ]; then
             WAIT_TIME=60
           fi
-          echo "Rate limit will reset at $(date -d @${RATELIMIT_RESET})"
+          echo "Rate limit will reset at $(date -d @"${RATELIMIT_RESET}")"
         else
           # Use exponential backoff: 2^attempt minutes (capped at 30 minutes)
           BACKOFF_MINUTES=$((2 ** (attempt > 5 ? 5 : attempt)))
           WAIT_TIME=$((BACKOFF_MINUTES * 60))
           if [ $WAIT_TIME -gt 1800 ]; then
-            WAIT_TIME=1800  # Cap at 30 minutes
+            WAIT_TIME=1800 # Cap at 30 minutes
           fi
           echo "Using exponential backoff: ${BACKOFF_MINUTES} minutes"
         fi
@@ -135,25 +139,25 @@ if [ -z "${ISTIO_VERSION}" ]; then
           echo "TIP: You can use --github-token <token> to authenticate and avoid rate limits."
         fi
 
-        if [ ${attempt} -ge 5 ]; then
+        if [ "${attempt}" -ge 5 ]; then
           echo "ERROR: Failed to get Istio version after ${attempt} attempts due to rate limiting."
           echo "Please try again later or use --github-token <token> to authenticate."
           exit 1
         fi
 
         echo "Will retry after ${WAIT_TIME} seconds... (attempt ${attempt}/120)"
-        sleep ${WAIT_TIME}
+        sleep "${WAIT_TIME}"
         continue
       fi
 
-      VERSION_WE_WANT=$(echo "$RESPONSE_BODY" | \
-            jq -r '.[].tag_name' 2>/dev/null | \
-            grep -v -E "(snapshot|alpha|beta|rc)\.[0-9]$" | sort -t"." -k 1.2g,1 -k 2g,2 -k 3g | tail -n 1)
+      VERSION_WE_WANT=$(echo "$RESPONSE_BODY" |
+        jq -r '.[].tag_name' 2>/dev/null |
+        grep -v -E "(snapshot|alpha|beta|rc)\.[0-9]$" | sort -t"." -k 1.2g,1 -k 2g,2 -k 3g | tail -n 1)
 
       if [[ "${VERSION_WE_WANT}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Successfully retrieved the latest Istio version: [$VERSION_WE_WANT]"
         break
-      elif [ ${attempt} -eq 120 ]; then
+      elif [ "${attempt}" -eq 120 ]; then
         echo "ERROR: Failed to get the latest Istio version from GitHub after 120 attempts (2 hours). Giving up."
         exit 1
       else
@@ -164,7 +168,7 @@ if [ -z "${ISTIO_VERSION}" ]; then
     ISTIO_VERSION="${VERSION_WE_WANT}"
   else
     # See https://github.com/istio/istio/wiki/Dev%20Builds
-    VERSION_WE_WANT="$(curl -L -s https://storage.googleapis.com/istio-build/dev/${DEV_ISTIO_VERSION})"
+    VERSION_WE_WANT="$(curl -L -s "https://storage.googleapis.com/istio-build/dev/${DEV_ISTIO_VERSION}")"
     if [ -z "${VERSION_WE_WANT}" ]; then
       echo "There is no known build for dev version ${DEV_ISTIO_VERSION}"
       exit 1
@@ -181,12 +185,12 @@ if [ ! -d "./istio-${VERSION_WE_WANT}" ]; then
   echo "Cannot find Istio ${VERSION_WE_WANT} - will download it now..."
   if [[ "${VERSION_WE_WANT}" == *latest ]]; then
     OLD_IFS=$IFS
-    IFS='.' read -r major minor_patch <<< "$VERSION_WE_WANT"
-    IFS='-' read -r minor patch <<< "$minor_patch"
+    IFS='.' read -r major minor_patch <<<"$VERSION_WE_WANT"
+    IFS='-' read -r minor patch <<<"$minor_patch"
     IFS=$OLD_IFS
     if [[ "${patch}" != *latest* ]]; then
       echo "Latest just supported as the patch version"
-       exit 1
+      exit 1
     fi
     VERSION_TO_MATCH="${major}.${minor}"
     echo "Getting the latest patch version for [${VERSION_TO_MATCH}]..."
@@ -222,17 +226,17 @@ if [ ! -d "./istio-${VERSION_WE_WANT}" ]; then
         elif [ -n "${RATELIMIT_RESET}" ] && [ "${RATELIMIT_REMAINING}" = "0" ]; then
           # Calculate time until rate limit reset
           CURRENT_TIME=$(date +%s)
-          WAIT_TIME=$((RATELIMIT_RESET - CURRENT_TIME + 5))  # Add 5 second buffer
+          WAIT_TIME=$((RATELIMIT_RESET - CURRENT_TIME + 5)) # Add 5 second buffer
           if [ $WAIT_TIME -lt 0 ]; then
             WAIT_TIME=60
           fi
-          echo "Rate limit will reset at $(date -d @${RATELIMIT_RESET})"
+          echo "Rate limit will reset at $(date -d @"${RATELIMIT_RESET}")"
         else
           # Use exponential backoff: 2^attempt minutes (capped at 30 minutes)
           BACKOFF_MINUTES=$((2 ** (attempt > 5 ? 5 : attempt)))
           WAIT_TIME=$((BACKOFF_MINUTES * 60))
           if [ $WAIT_TIME -gt 1800 ]; then
-            WAIT_TIME=1800  # Cap at 30 minutes
+            WAIT_TIME=1800 # Cap at 30 minutes
           fi
           echo "Using exponential backoff: ${BACKOFF_MINUTES} minutes"
         fi
@@ -241,25 +245,25 @@ if [ ! -d "./istio-${VERSION_WE_WANT}" ]; then
           echo "TIP: You can use --github-token <token> to authenticate and avoid rate limits."
         fi
 
-        if [ ${attempt} -ge 5 ]; then
+        if [ "${attempt}" -ge 5 ]; then
           echo "ERROR: Failed to get latest patch version after ${attempt} attempts due to rate limiting."
           echo "Please try again later or use --github-token <token> to authenticate."
           exit 1
         fi
 
         echo "Will retry after ${WAIT_TIME} seconds... (attempt ${attempt}/120)"
-        sleep ${WAIT_TIME}
+        sleep "${WAIT_TIME}"
         continue
       fi
 
-      LATEST=$(echo "$RESPONSE_BODY" | \
-       jq -r --arg VERSION_TO_MATCH "$VERSION_TO_MATCH" '.[] | select(.tag_name | startswith($VERSION_TO_MATCH)) | .tag_name' \
-       | sort -V \
-       | tail -n 1)
+      LATEST=$(echo "$RESPONSE_BODY" |
+        jq -r --arg VERSION_TO_MATCH "$VERSION_TO_MATCH" '.[] | select(.tag_name | startswith($VERSION_TO_MATCH)) | .tag_name' |
+        sort -V |
+        tail -n 1)
       if [[ "${LATEST}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Successfully retrieved the latest patch version [${LATEST}]"
         break
-      elif [ ${attempt} -eq 120 ]; then
+      elif [ "${attempt}" -eq 120 ]; then
         echo "ERROR: Failed to get the latest patch version for [${VERSION_TO_MATCH}] from GitHub after 120 attempts (2 hours). Giving up."
         exit 1
       else
@@ -280,7 +284,7 @@ if [ ! -d "./istio-${VERSION_WE_WANT}" ]; then
     curl -L --retry 4 --retry-delay 5 https://istio.io/downloadIstio | sh -
   else
     # See https://github.com/istio/istio/wiki/Dev%20Builds
-    curl -L https://gcsweb.istio.io/gcs/istio-build/dev/${VERSION_WE_WANT}/istio-${VERSION_WE_WANT}-linux-amd64.tar.gz | tar xvfz -
+    curl -L "https://gcsweb.istio.io/gcs/istio-build/dev/${VERSION_WE_WANT}/istio-${VERSION_WE_WANT}-linux-amd64.tar.gz" | tar xvfz -
     if [ ! -d "./istio-${VERSION_WE_WANT}" ]; then
       echo "Could not download ${VERSION_WE_WANT}"
       exit 1

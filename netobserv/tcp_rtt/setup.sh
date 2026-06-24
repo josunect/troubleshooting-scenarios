@@ -6,7 +6,9 @@ TARGET_NS="netobserv-eval-tcp-rtt"
 export TARGET_NS
 export REQUIRED_NETOBSERV_FEATURES="FlowRTT"
 
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/check_prereqs.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/wait_for.sh"
 
 check_netobserv_prereqs

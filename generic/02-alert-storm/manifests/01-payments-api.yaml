@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +18,7 @@ spec:
         app: payments-api
         app.kubernetes.io/part-of: payment-processor
       annotations:
-        checksum/config: "initial"
+        checksum/config: initial
     spec:
       containers:
         - name: payments-api
@@ -31,11 +32,11 @@ spec:
               value: /etc/config/settings.json
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: 128Mi
+              cpu: 100m
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: 256Mi
+              cpu: 200m
           livenessProbe:
             httpGet:
               path: /health

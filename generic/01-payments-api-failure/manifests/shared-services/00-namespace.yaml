@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: shared-services
   labels:
-    openshift.io/user-monitoring: "true"
+    openshift.io/user-monitoring: 'true'
     app.kubernetes.io/name: shared-services
     app.kubernetes.io/instance: shared-services
     app.kubernetes.io/component: namespace

@@ -1,3 +1,4 @@
+---
 # Generates NXDOMAIN and DNS error responses (DNSTracking).
 apiVersion: v1
 kind: Namespace
@@ -36,8 +37,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          command: ["/bin/sh", "-c"]
+              drop: [ALL]
+          command: [/bin/sh, -c]
           args:
             - |
               echo "NXDOMAIN prober: resolving non-existent names"

@@ -9,7 +9,7 @@ cd "$SCRIPT_DIR"
 
 if [ "${SINGLE_USER:-}" = "1" ]; then
   MANIFESTS=$(mktemp -d)
-  trap "rm -rf $MANIFESTS" EXIT
+  trap 'rm -rf $MANIFESTS' EXIT
   cp -r manifests/* "$MANIFESTS/"
 
   # Both services use a single "dbuser" account

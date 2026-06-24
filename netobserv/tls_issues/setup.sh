@@ -7,7 +7,9 @@ TLS_SECRET_NAME="tls-server-cert"
 TLS_CN="tls-server.netobserv-eval-tls.svc.cluster.local"
 export TARGET_NS
 
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/check_prereqs.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/wait_for.sh"
 
 check_netobserv_prereqs
@@ -26,7 +28,7 @@ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
 
 oc create secret tls "${TLS_SECRET_NAME}" \
   --cert="${TMPDIR}/tls.crt" --key="${TMPDIR}/tls.key" \
-  -n "${TARGET_NS}" --dry-run=client -o yaml > "${TMPDIR}/secret.yaml"
+  -n "${TARGET_NS}" --dry-run=client -o yaml >"${TMPDIR}/secret.yaml"
 
 if [[ "${NETOBSERV_EVAL_RECREATE_NS:-true}" == "true" ]] && oc get namespace "${TARGET_NS}" >/dev/null 2>&1; then
   echo "Recreating eval namespace ${TARGET_NS} for a clean fixture deploy…"
@@ -36,7 +38,7 @@ fi
 
 oc apply -f "${SCRIPT_DIR}/fixtures/manifest.yaml" -f "${TMPDIR}/secret.yaml"
 
-for attempt in $(seq 1 15); do
+for _ in $(seq 1 15); do
   if openshift_namespace_uid_min "${TARGET_NS}" >/dev/null 2>&1; then
     break
   fi

@@ -9,8 +9,8 @@ wait_for_rollout() {
     return 0
   fi
   echo "ERROR: deployment/${deployment} not available in ${ns} within ${timeout}"
-  oc get pods -n "$ns" -l "app=${deployment}" -o wide 2>/dev/null \
-    || oc get pods -n "$ns" -o wide 2>/dev/null || true
+  oc get pods -n "$ns" -l "app=${deployment}" -o wide 2>/dev/null ||
+    oc get pods -n "$ns" -o wide 2>/dev/null || true
   local pod
   for pod in $(oc get pods -n "$ns" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     echo "--- oc describe pod/${pod} -n ${ns} (last events) ---"

@@ -3,16 +3,16 @@ set -euo pipefail
 
 FIXTURE_DIR="$(cd "$(dirname "$0")/fixtures" && pwd)"
 NAMESPACE="bookinfo"
-WAIT_SECONDS=${WAIT_SECONDS:-180}  # override with: make all WAIT_SECONDS=60
+WAIT_SECONDS=${WAIT_SECONDS:-180} # override with: make all WAIT_SECONDS=60
 KUBECTL="${KUBECTL:-oc}"
 
 # ── Clean pre-existing ratings Istio resources ────────────────────────────────
 # Removes leftover resources — including any VirtualServices created by a
 # previous agent run — so the agent starts with a clean slate each time.
 echo "Removing existing ratings Istio resources…"
-$KUBECTL delete virtualservice     ratings -n "$NAMESPACE" --ignore-not-found
-$KUBECTL delete destinationrule    ratings -n "$NAMESPACE" --ignore-not-found
-sleep 5   # allow Istio to propagate the deletions
+$KUBECTL delete virtualservice ratings -n "$NAMESPACE" --ignore-not-found
+$KUBECTL delete destinationrule ratings -n "$NAMESPACE" --ignore-not-found
+sleep 5 # allow Istio to propagate the deletions
 
 # ── Apply the latency fault injection manifests ───────────────────────────────
 echo "Applying latency fault injection manifests (3s fixedDelay on ratings)…"
