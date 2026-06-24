@@ -18,20 +18,19 @@ ensure_gateway_api_crds() {
   fi
 
   echo "Verifying that Gateway API is installed; if it is not then Gateway API version ${version} will be installed now."
-  ${client} get crd gateways.gateway.networking.k8s.io ${context_args} &> /dev/null || \
-    { ${client} kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=${version}" | ${client} apply -f - ${context_args}; }
+  ${client} get crd gateways.gateway.networking.k8s.io "${context_args}" &>/dev/null ||
+    { ${client} kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=${version}" | ${client} apply -f - "${context_args}"; }
 }
 
 # Returns 0 if a smcp in given namespaces contains .spec.mode=ClusterWide, 1 otherwise.
 is_cluster_wide() {
-  local mode=$(${CLIENT_EXE} get smcp -n ${ISTIO_NAMESPACE} -o=jsonpath='{.items[0].spec.mode}' 2> /dev/null || true)
-  if [ "${mode}" = "ClusterWide" ]
-    then
-      # 0 = true
-      return 0
-    else
-      # 1 = false
-      return 1
+  local mode=$(${CLIENT_EXE} get smcp -n "${ISTIO_NAMESPACE}" -o=jsonpath='{.items[0].spec.mode}' 2>/dev/null || true)
+  if [ "${mode}" = "ClusterWide" ]; then
+    # 0 = true
+    return 0
+  else
+    # 1 = false
+    return 1
   fi
 }
 
@@ -43,8 +42,8 @@ is_istio_version_eq_greater_than() {
 
   istio_expected_version=$(echo "$expected_version" | cut -d'-' -f1)
 
-  IFS='.' read -r major minor _patch <<< "$istio_parsed_version"
-  IFS='.' read -r major_expected minor_expected _patch_expected <<< "$istio_expected_version"
+  IFS='.' read -r major minor _patch <<<"$istio_parsed_version"
+  IFS='.' read -r major_expected minor_expected _patch_expected <<<"$istio_expected_version"
   IFS=' '
   if [ "${major}" -lt "${major_expected}" ]; then
     return 1

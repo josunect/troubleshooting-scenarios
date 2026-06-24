@@ -85,23 +85,22 @@ install_istio() {
   local crd_wait_seconds="${INSTALL_ISTIO_CRD_WAIT_SECONDS:-720}"
   infomsg "Waiting for mesh CRDs to be established (up to ${crd_wait_seconds}s per CRD)."
   for crd in \
-     authorizationpolicies.security.istio.io \
-     destinationrules.networking.istio.io \
-     envoyfilters.networking.istio.io \
-     gateways.networking.istio.io \
-     istios.sailoperator.io \
-     istiocnis.sailoperator.io \
-     peerauthentications.security.istio.io \
-     proxyconfigs.networking.istio.io \
-     requestauthentications.security.istio.io \
-     serviceentries.networking.istio.io \
-     sidecars.networking.istio.io \
-     telemetries.telemetry.istio.io \
-     virtualservices.networking.istio.io \
-     wasmplugins.extensions.istio.io \
-     workloadentries.networking.istio.io \
-     workloadgroups.networking.istio.io
-  do
+    authorizationpolicies.security.istio.io \
+    destinationrules.networking.istio.io \
+    envoyfilters.networking.istio.io \
+    gateways.networking.istio.io \
+    istios.sailoperator.io \
+    istiocnis.sailoperator.io \
+    peerauthentications.security.istio.io \
+    proxyconfigs.networking.istio.io \
+    requestauthentications.security.istio.io \
+    serviceentries.networking.istio.io \
+    sidecars.networking.istio.io \
+    telemetries.telemetry.istio.io \
+    virtualservices.networking.istio.io \
+    wasmplugins.extensions.istio.io \
+    workloadentries.networking.istio.io \
+    workloadgroups.networking.istio.io; do
     wait_for_cluster_crd "${crd}" "${crd}" "${crd_wait_seconds}"
   done
 
@@ -128,8 +127,7 @@ install_istio() {
   done
 
   infomsg "Waiting for operator deployments to start..."
-  for op in ${servicemesh_deployment}
-  do
+  for op in ${servicemesh_deployment}; do
     infomsg "Expecting [${op}] to be ready"
     if ! ${OC} rollout status "${op}" -n "${OLM_OPERATORS_NAMESPACE}" --timeout=300s; then
       errormsg "Timed out waiting for operator deployment [${op}] to become ready."
@@ -139,12 +137,12 @@ install_istio() {
 
   infomsg "Wait for the servicemesh operator to be Ready."
   local operator_pods
-  operator_pods="$(${OC} get pod -n ${OLM_OPERATORS_NAMESPACE} -o name 2>/dev/null | grep -E 'sail|servicemesh|istio' || true)"
+  operator_pods="$(${OC} get pod -n "${OLM_OPERATORS_NAMESPACE}" -o name 2>/dev/null | grep -E 'sail|servicemesh|istio' || true)"
   if [ -z "${operator_pods}" ]; then
     errormsg "No Sail/ServiceMesh operator pods found in namespace [${OLM_OPERATORS_NAMESPACE}] (cannot oc wait on an empty list)."
     exit 1
   fi
-  if ! ${OC} wait --for condition=Ready ${operator_pods} --timeout 300s -n "${OLM_OPERATORS_NAMESPACE}"; then
+  if ! ${OC} wait --for condition=Ready "${operator_pods}" --timeout 300s -n "${OLM_OPERATORS_NAMESPACE}"; then
     errormsg "Timed out or failed: ${OC} wait --for condition=Ready ${operator_pods} --timeout 300s -n ${OLM_OPERATORS_NAMESPACE}"
     exit 1
   fi
@@ -172,31 +170,31 @@ install_istio() {
          else (.spec.versions | map(select(.served == true and (.name | test("^v[0-9]+$")))) | sort_by(.name) | last)
          end)
       | .schema.openAPIV3Schema.properties.spec.properties.version.default // empty')"
-    if [ -z "${istio_version}" -o "${istio_version}" == "null" ]; then
+    if [ -z "${istio_version}" ] || [ "${istio_version}" == "null" ]; then
       errormsg "Cannot determine the latest supported version of Istio. You must provide an explicit vX.Y.Z version to install via the --istio-version option"
       exit 1
     fi
     infomsg "The latest supported version of Istio is [${istio_version}]. That version will be installed."
   fi
 
-  if ! ${OC} get namespace ${control_plane_namespace} >& /dev/null; then
+  if ! ${OC} get namespace "${control_plane_namespace}" >&/dev/null; then
     infomsg "Creating control plane namespace: ${control_plane_namespace}"
-    ${OC} create namespace ${control_plane_namespace}
+    ${OC} create namespace "${control_plane_namespace}"
   fi
 
   # IstioCNI is required for OpenShift. When on OpenShift, ensure there is one and only one IstioCNI installed.
   # It must be named "default". It will always refer to the namespace "istio-cni".
   if [ "${IS_OPENSHIFT}" == "true" ]; then
     local istiocni_name="default"
-    if ! ${OC} get istiocni ${istiocni_name} >& /dev/null; then
+    if ! ${OC} get istiocni ${istiocni_name} >&/dev/null; then
       local istiocni_yaml_file
       istiocni_yaml_file="$(mktemp "${TMPDIR:-/tmp}/istiocni-cr.XXXXXX.yaml" 2>/dev/null || mktemp "${TMPDIR:-/tmp}/istiocni-cr.XXXXXX")"
-      if ! ${OC} get namespace istio-cni >& /dev/null; then
+      if ! ${OC} get namespace istio-cni >&/dev/null; then
         infomsg "Creating istio-cni namespace"
         ${OC} create namespace istio-cni
       fi
       infomsg "Installing IstioCNI CR"
-      cat <<EOMCNI > "${istiocni_yaml_file}"
+      cat <<EOMCNI >"${istiocni_yaml_file}"
 apiVersion: sailoperator.io/v1
 kind: IstioCNI
 metadata:
@@ -227,7 +225,7 @@ EOMCNI
 
     istio_yaml_file="$(mktemp "${TMPDIR:-/tmp}/istio-cr.XXXXXX.yaml" 2>/dev/null || mktemp "${TMPDIR:-/tmp}/istio-cr.XXXXXX")"
     istio_yaml_owned="true"
-    cat <<EOM > "${istio_yaml_file}"
+    cat <<EOM >"${istio_yaml_file}"
 apiVersion: sailoperator.io/v1
 kind: Istio
 metadata:
@@ -264,19 +262,19 @@ ensure_istio_revision_tag_default() {
   local istio_yaml_file="${1:-}"
   local istio_cr_name="default"
   if [ -n "${istio_yaml_file}" ] && [ -f "${istio_yaml_file}" ]; then
-    istio_cr_name="$(${OC} get -f "${istio_yaml_file}" -o jsonpath='{.metadata.name}' 2> /dev/null || true)"
+    istio_cr_name="$(${OC} get -f "${istio_yaml_file}" -o jsonpath='{.metadata.name}' 2>/dev/null || true)"
     if [ -z "${istio_cr_name}" ]; then
       istio_cr_name="default"
     fi
   fi
-  if ! ${OC} get crd istiorevisiontags.sailoperator.io >& /dev/null; then
+  if ! ${OC} get crd istiorevisiontags.sailoperator.io >&/dev/null; then
     infomsg "IstioRevisionTag CRD not found; skip stable revision tag [${istio_cr_name}]"
     return 0
   fi
   infomsg "Ensuring IstioRevisionTag [${istio_cr_name}] references Istio/${istio_cr_name} (namespaces may use istio.io/rev=${istio_cr_name})"
   local tag_yaml
   tag_yaml="$(mktemp "${TMPDIR:-/tmp}/istio-revision-tag.XXXXXX.yaml" 2>/dev/null || mktemp "${TMPDIR:-/tmp}/istio-revision-tag.XXXXXX")"
-  cat <<EOM > "${tag_yaml}"
+  cat <<EOM >"${tag_yaml}"
 apiVersion: sailoperator.io/v1
 kind: IstioRevisionTag
 metadata:
@@ -300,7 +298,7 @@ ossm_prompt_yes_or_env_confirm() {
   fi
   if [ -r /dev/tty ] && [ -w /dev/tty ]; then
     local ans
-    read -r -p "${prompt}" ans < /dev/tty || true
+    read -r -p "${prompt}" ans </dev/tty || true
     if [ "${ans}" != "yes" ]; then
       errormsg "Deletion aborted (expected exactly 'yes')."
       exit 1
@@ -337,13 +335,14 @@ EOF
 delete_servicemesh_operators() {
   local abort_operation="false"
   for cr in \
-    $(${OC} get istio             -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g' ) \
-    $(${OC} get istiocni          -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g' ) \
-    $(${OC} get istiorevisiontags -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g' )
-  do
+    $(${OC} get istio -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g') \
+    $(${OC} get istiocni -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g') \
+    $(${OC} get istiorevisiontags -o custom-columns=K:.kind,N:.metadata.name --no-headers | sed 's/  */:/g'); do
     abort_operation="true"
-    local res_kind=$(echo ${cr} | cut -d: -f1)
-    local res_name=$(echo ${cr} | cut -d: -f2)
+    local res_kind
+    res_kind=$(echo "${cr}" | cut -d: -f1)
+    local res_name
+    res_name=$(echo "${cr}" | cut -d: -f2)
     errormsg "A [${res_kind}] resource named [${res_name}] still exists. You must delete it first."
   done
   if [ "${abort_operation}" == "true" ]; then
@@ -352,7 +351,7 @@ delete_servicemesh_operators() {
   fi
 
   infomsg "Unsubscribing from the Sail operator"
-  ${OC} delete subscription --ignore-not-found=true --namespace ${OLM_OPERATORS_NAMESPACE} my-sailoperator
+  ${OC} delete subscription --ignore-not-found=true --namespace "${OLM_OPERATORS_NAMESPACE}" my-sailoperator
 
   infomsg "Deleting OLM CSVs which uninstalls the operators and their related resources"
   local csv_list
@@ -379,7 +378,7 @@ EOF
 
   infomsg "Delete any resources that are getting left behind"
   local leftover_list
-  leftover_list="$(${OC} get secrets -n ${OLM_OPERATORS_NAMESPACE} cacerts --no-headers -o custom-columns=K:kind,NS:.metadata.namespace,N:.metadata.name 2>/dev/null | sed 's/  */:/g' || true)"
+  leftover_list="$(${OC} get secrets -n "${OLM_OPERATORS_NAMESPACE}" cacerts --no-headers -o custom-columns=K:kind,NS:.metadata.namespace,N:.metadata.name 2>/dev/null | sed 's/  */:/g' || true)"
   leftover_list="${leftover_list}
 $(${OC} get configmaps --all-namespaces --no-headers -o custom-columns=K:kind,NS:.metadata.namespace,N:.metadata.name 2>/dev/null | sed 's/  */:/g' | grep -Ei ':configmap:[^:]+:.*(istio|sail|servicemesh)' || true)"
   if echo "${leftover_list}" | grep -q '[^[:space:]]'; then
@@ -414,14 +413,16 @@ delete_istio() {
   infomsg "Deleting all Istio and IstioCNI CRs (if they exist) which uninstalls all the Service Mesh components"
   local doomed_namespaces=""
   for cr in \
-    $(${OC} get istio             -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g' ) \
-    $(${OC} get istiocni          -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g' ) \
-    $(${OC} get istiorevisiontags -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g' )
-  do
-    local res_kind=$(echo ${cr} | cut -d: -f1)
-    local res_name=$(echo ${cr} | cut -d: -f2)
-    local doomed_ns=$(echo ${cr} | cut -d: -f3)
-    ${OC} delete ${res_kind} ${res_name}
+    $(${OC} get istio -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g') \
+    $(${OC} get istiocni -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g') \
+    $(${OC} get istiorevisiontags -o custom-columns=K:.kind,N:.metadata.name,NS:.spec.namespace --no-headers | sed 's/  */:/g'); do
+    local res_kind
+    res_kind=$(echo "${cr}" | cut -d: -f1)
+    local res_name
+    res_name=$(echo "${cr}" | cut -d: -f2)
+    local doomed_ns
+    doomed_ns=$(echo "${cr}" | cut -d: -f3)
+    ${OC} delete "${res_kind}" "${res_name}"
     if [ -n "${doomed_ns}" ] && [ "${doomed_ns}" != "<none>" ]; then
       doomed_namespaces="$(printf '%s\n%s\n' "${doomed_ns}" "${doomed_namespaces}" | awk 'NF && $0 != "<none>"' | sort -u)"
     fi
@@ -435,8 +436,7 @@ delete_istio() {
       ossm_prompt_yes_or_env_confirm "Deletion includes control-plane namespace [${cp_ns}]. Type 'yes' to delete namespaces: "
     fi
     infomsg "Deleting the control plane and CNI namespaces (OSSM_DELETE_ISTIO_NAMESPACES=yes)"
-    for ns in ${doomed_namespaces}
-    do
+    for ns in ${doomed_namespaces}; do
       [ -z "$(echo "${ns}" | tr -d '[:space:]')" ] && continue
       [ "${ns}" = "<none>" ] && continue
       ${OC} delete namespace "${ns}"
@@ -447,13 +447,16 @@ delete_istio() {
 status_servicemesh_operators() {
   infomsg ""
   infomsg "===== SERVICEMESH OPERATOR SUBSCRIPTION"
-  local sub_name="$(${OC} get subscriptions -n ${OLM_OPERATORS_NAMESPACE} -o name my-sailoperator 2>/dev/null)"
+  local sub_name
+  sub_name="$(${OC} get subscriptions -n "${OLM_OPERATORS_NAMESPACE}" -o name my-sailoperator 2>/dev/null)"
   if [ ! -z "${sub_name}" ]; then
-    ${OC} get --namespace ${OLM_OPERATORS_NAMESPACE} ${sub_name}
+    ${OC} get --namespace "${OLM_OPERATORS_NAMESPACE}" "${sub_name}"
     infomsg ""
     infomsg "===== SERVICEMESH OPERATOR PODS"
-    local all_pods="$(${OC} get pods -n ${OLM_OPERATORS_NAMESPACE} -o name | grep -E 'sail|servicemesh|istio')"
-    [ ! -z "${all_pods}" ] && ${OC} get --namespace ${OLM_OPERATORS_NAMESPACE} ${all_pods} || infomsg "There are no pods"
+    local all_pods
+    all_pods="$(${OC} get pods -n "${OLM_OPERATORS_NAMESPACE}" -o name | grep -E 'sail|servicemesh|istio')"
+    # shellcheck disable=SC2015
+    [ ! -z "${all_pods}" ] && ${OC} get --namespace "${OLM_OPERATORS_NAMESPACE}" "${all_pods}" || infomsg "There are no pods"
   else
     infomsg "There are no Subscriptions for the Service Mesh Operators"
   fi
@@ -467,12 +470,13 @@ status_istio() {
     ${OC} get istio
     infomsg ""
     for cr in \
-      $(${OC} get istio -o custom-columns=NS:.spec.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-    do
-      local res_namespace=$(echo ${cr} | cut -d: -f1)
-      local res_name=$(echo ${cr} | cut -d: -f2)
+      $(${OC} get istio -o custom-columns=NS:.spec.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+      local res_namespace
+      res_namespace=$(echo "${cr}" | cut -d: -f1)
+      local res_name
+      res_name=$(echo "${cr}" | cut -d: -f2)
       infomsg "Istio [${res_name}] control plane namespace [${res_namespace}]:"
-      ${OC} get pods -n ${res_namespace}
+      ${OC} get pods -n "${res_namespace}"
     done
   else
     infomsg "There are no Istio CRs in the cluster"
@@ -485,12 +489,13 @@ status_istio() {
     ${OC} get istiocni
     infomsg ""
     for cr in \
-      $(${OC} get istiocni -o custom-columns=NS:.spec.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-    do
-      local res_namespace=$(echo ${cr} | cut -d: -f1)
-      local res_name=$(echo ${cr} | cut -d: -f2)
+      $(${OC} get istiocni -o custom-columns=NS:.spec.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+      local res_namespace
+      res_namespace=$(echo "${cr}" | cut -d: -f1)
+      local res_name
+      res_name=$(echo "${cr}" | cut -d: -f2)
       infomsg "IstioCNI [${res_name}], CNI namespace [${res_namespace}]:"
-      ${OC} get pods -n ${res_namespace}
+      ${OC} get pods -n "${res_namespace}"
     done
   else
     infomsg "There are no IstioCNI CRs in the cluster"

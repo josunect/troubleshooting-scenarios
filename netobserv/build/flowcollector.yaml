@@ -1,3 +1,4 @@
+---
 # FlowCollector for NetObserv troubleshooting evals (name must be "cluster").
 #
 # Differs from netobserv-operator deploy-sample-cr:
@@ -16,9 +17,7 @@ spec:
   deploymentModel: Service
   networkPolicy:
     enable: true
-    additionalNamespaces:
-      - openshift-mcp
-      - kubernetes-mcp-server
+    additionalNamespaces: [openshift-mcp, kubernetes-mcp-server]
   agent:
     type: eBPF
     ebpf:
@@ -26,13 +25,8 @@ spec:
       privileged: true
       cacheActiveTimeout: 15s
       cacheMaxFlows: 120000
-      features:
-        - DNSTracking
-        - PacketDrop
-        - FlowRTT
-        - NetworkEvents
-      excludeInterfaces:
-        - lo
+      features: [DNSTracking, PacketDrop, FlowRTT, NetworkEvents]
+      excludeInterfaces: [lo]
   processor:
     consumerReplicas: 1
     metrics:

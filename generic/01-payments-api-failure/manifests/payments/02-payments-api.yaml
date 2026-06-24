@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,7 +40,7 @@ spec:
             - name: PGHOST
               value: postgres.shared-services.svc.cluster.local
             - name: PGPORT
-              value: "5432"
+              value: '5432'
             - name: PGDATABASE
               value: demo
 ---

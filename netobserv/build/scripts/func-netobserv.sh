@@ -14,7 +14,7 @@ wait_for_cluster_crd() {
   local max_wait="${3:-720}"
   local waited=0
   infomsg "Waiting for CRD [${crd_name}] (${human})..."
-  while ! ${OC} get crd "${crd_name}" >& /dev/null; do
+  while ! ${OC} get crd "${crd_name}" >&/dev/null; do
     if [ "${waited}" -ge "${max_wait}" ]; then
       errormsg "Timeout after ${max_wait}s waiting for CRD [${crd_name}] (${human}). Check the operator Subscription in ${NETOBSERV_OPERATOR_NAMESPACE}."
       exit 1

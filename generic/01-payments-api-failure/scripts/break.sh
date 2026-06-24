@@ -25,8 +25,8 @@ echo "payments-api is returning 503."
 echo "Waiting for PaymentErrorRateHigh critical alert to fire..."
 while true; do
   ALERT_COUNT=$(curl -sk -H "Authorization: Bearer ${TOKEN}" \
-    "https://${THANOS_HOST}/api/v1/alerts" 2>/dev/null \
-    | python3 -c "
+    "https://${THANOS_HOST}/api/v1/alerts" 2>/dev/null |
+    python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 print(sum(1 for a in data.get('data',{}).get('alerts',[])

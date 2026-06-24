@@ -7,7 +7,9 @@ export TARGET_NS
 # OVS_DROP_EXPLICIT in flows needs PacketDrop; NetpolDenied metric needs NetworkEvents.
 export REQUIRED_NETOBSERV_FEATURES="NetworkEvents PacketDrop"
 
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/check_prereqs.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/../build/scripts/wait_for.sh"
 
 check_netobserv_prereqs

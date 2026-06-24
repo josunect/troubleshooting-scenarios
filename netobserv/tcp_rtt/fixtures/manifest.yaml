@@ -1,3 +1,4 @@
+---
 # HTTP server with artificial delay on responses (FlowRTT); client polls continuously.
 apiVersion: v1
 kind: Namespace
@@ -34,8 +35,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          command: ["/bin/sh", "-c"]
+              drop: [ALL]
+          command: [/bin/sh, -c]
           args:
             - |
               cat >/tmp/server.py <<'PY'
@@ -99,8 +100,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          command: ["/bin/sh", "-c"]
+              drop: [ALL]
+          command: [/bin/sh, -c]
           args:
             - |
               while true; do

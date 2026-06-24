@@ -10,14 +10,21 @@
 set -u
 
 # Change to the directory where this script is
-SCRIPT_ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
-cd ${SCRIPT_ROOT}
+SCRIPT_ROOT="$(
+  cd "$(dirname "$0")" || exit
+  pwd -P
+)"
+cd "${SCRIPT_ROOT}" || exit
 
 # get function definitions
-source ${SCRIPT_ROOT}/func-sm.sh
-source ${SCRIPT_ROOT}/func-kiali.sh
-source ${SCRIPT_ROOT}/func-addons.sh
-source ${SCRIPT_ROOT}/func-log.sh
+# shellcheck disable=SC1091
+source "${SCRIPT_ROOT}/func-sm.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_ROOT}/func-kiali.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_ROOT}/func-addons.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_ROOT}/func-log.sh"
 
 # Next-arg must be present and not look like another flag (avoids set -u blow-up on missing values).
 ossm_install_require_opt_value() {
@@ -47,30 +54,94 @@ while [[ $# -gt 0 ]]; do
 
     # COMMANDS
 
-    install-operators) _CMD="install-operators" ; shift ;;
-    install-istio)     _CMD="install-istio"     ; shift ;;
-    install-kiali-support) _CMD="install-kiali-support" ; shift ;;
-    delete-operators)  _CMD="delete-operators"  ; shift ;;
-    delete-istio)      _CMD="delete-istio"      ; shift ;;
-    status)            _CMD="status"            ; shift ;;
-    kiali-ui)          _CMD="kiali-ui"          ; shift ;;
+    install-operators)
+      _CMD="install-operators"
+      shift
+      ;;
+    install-istio)
+      _CMD="install-istio"
+      shift
+      ;;
+    install-kiali-support)
+      _CMD="install-kiali-support"
+      shift
+      ;;
+    delete-operators)
+      _CMD="delete-operators"
+      shift
+      ;;
+    delete-istio)
+      _CMD="delete-istio"
+      shift
+      ;;
+    status)
+      _CMD="status"
+      shift
+      ;;
+    kiali-ui)
+      _CMD="kiali-ui"
+      shift
+      ;;
 
     # OPTIONS
 
-    -dn|--delete-namespaces)        OSSM_DELETE_ISTIO_NAMESPACES="yes" ; shift ;;
+    -dn | --delete-namespaces)
+      OSSM_DELETE_ISTIO_NAMESPACES="yes"
+      shift
+      ;;
 
-    -a|--addons)                    ossm_install_require_opt_value "${key}" "${2:-}"; ADDONS="${2}"                  ; shift;shift ;;
-    -c|--client)                    ossm_install_require_opt_value "${key}" "${2:-}"; OC="${2}"                      ; shift;shift ;;
-    -cpn|--control-plane-namespace) ossm_install_require_opt_value "${key}" "${2:-}"; CONTROL_PLANE_NAMESPACE="${2}" ; shift;shift ;;
-    -cs|--catalog-source)           ossm_install_require_opt_value "${key}" "${2:-}"; CATALOG_SOURCE="${2}"          ; shift;shift ;;
-    -ek|--enable-kiali)             ossm_install_require_opt_value "${key}" "${2:-}"; ENABLE_KIALI="${2}"            ; shift;shift ;;
-    -eo|--enable-ossmconsole)       ossm_install_require_opt_value "${key}" "${2:-}"; ENABLE_OSSMCONSOLE="${2}"      ; shift;shift ;;
-    -iv|--istio-version)            ossm_install_require_opt_value "${key}" "${2:-}"; ISTIO_VERSION="${2}"           ; shift;shift ;;
-    -kv|--kiali-version)            ossm_install_require_opt_value "${key}" "${2:-}"; KIALI_VERSION="${2}"           ; shift;shift ;;
+    -a | --addons)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      ADDONS="${2}"
+      shift
+      shift
+      ;;
+    -c | --client)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      OC="${2}"
+      shift
+      shift
+      ;;
+    -cpn | --control-plane-namespace)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      CONTROL_PLANE_NAMESPACE="${2}"
+      shift
+      shift
+      ;;
+    -cs | --catalog-source)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      CATALOG_SOURCE="${2}"
+      shift
+      shift
+      ;;
+    -ek | --enable-kiali)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      ENABLE_KIALI="${2}"
+      shift
+      shift
+      ;;
+    -eo | --enable-ossmconsole)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      ENABLE_OSSMCONSOLE="${2}"
+      shift
+      shift
+      ;;
+    -iv | --istio-version)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      ISTIO_VERSION="${2}"
+      shift
+      shift
+      ;;
+    -kv | --kiali-version)
+      ossm_install_require_opt_value "${key}" "${2:-}"
+      KIALI_VERSION="${2}"
+      shift
+      shift
+      ;;
 
     # HELP
 
-    -h|--help)
+    -h | --help)
       cat <<HELPMSG
 
 $0 [option...] command
@@ -226,14 +297,14 @@ ossm_open_url_in_browser() {
         wslview "${url}" >/dev/null 2>&1 && return 0
       fi
       ;;
-    CYGWIN*|MSYS*|MINGW*)
+    CYGWIN* | MSYS* | MINGW*)
       if command -v cmd.exe >/dev/null 2>&1; then
         cmd.exe /c start "" "${url}" >/dev/null 2>&1 && return 0
       fi
       ;;
   esac
   case "${OSTYPE:-}" in
-    msys*|cygwin*|mingw*)
+    msys* | cygwin* | mingw*)
       if command -v cmd.exe >/dev/null 2>&1; then
         cmd.exe /c start "" "${url}" >/dev/null 2>&1 && return 0
       fi
@@ -262,7 +333,7 @@ ossm_validate_kiali_ready() {
     local kiali_pods
     kiali_pods="$(${OC} -n "${CONTROL_PLANE_NAMESPACE}" get pods -l app.kubernetes.io/name=kiali -o name 2>/dev/null || true)"
     if echo "${kiali_pods}" | grep -q '[^[:space:]]'; then
-      if ${OC} -n "${CONTROL_PLANE_NAMESPACE}" wait --for=condition=Ready ${kiali_pods} --timeout="${retry_interval}s" >/dev/null 2>&1; then
+      if ${OC} -n "${CONTROL_PLANE_NAMESPACE}" wait --for=condition=Ready "${kiali_pods}" --timeout="${retry_interval}s" >/dev/null 2>&1; then
         break
       fi
     fi
@@ -300,33 +371,33 @@ ossm_validate_kiali_ready() {
 # * If the API probe fails but the client is oc, still require whoami so a logged-out OpenShift session fails clearly.
 # * Define the namespace where the operators are expected to run based on cluster type.
 
-if ! which ${OC} >& /dev/null; then
+if ! which "${OC}" >&/dev/null; then
   errormsg "The client is not valid [${OC}]. Use --client to specify a valid path to 'oc' or 'kubectl'."
   exit 1
 fi
 
-if ${OC} api-resources --api-group=route.openshift.io -o name 2>/dev/null | grep -q .
-then
+if ${OC} api-resources --api-group=route.openshift.io -o name 2>/dev/null | grep -q .; then
   IS_OPENSHIFT="true"
   OLM_OPERATORS_NAMESPACE="openshift-operators"
 else
   IS_OPENSHIFT="false"
+  # shellcheck disable=SC2034
   OLM_OPERATORS_NAMESPACE="operators"
 fi
 
 if [ "${IS_OPENSHIFT}" = "true" ]; then
-  if ! ${OC} whoami >& /dev/null; then
+  if ! ${OC} whoami >&/dev/null; then
     errormsg "You are not logged into the OpenShift cluster. Use '${OC} login' to log into a cluster and then retry."
     exit 1
   fi
 elif [ "$(basename -- "${OC}")" = "oc" ]; then
-  if ! ${OC} whoami >& /dev/null; then
+  if ! ${OC} whoami >&/dev/null; then
     errormsg "You are not logged into the OpenShift cluster. Use '${OC} login' to log into a cluster and then retry."
     exit 1
   fi
 fi
 
-if [ "${IS_OPENSHIFT}" == "true" -a "${CATALOG_SOURCE}" != "redhat" -a "${CATALOG_SOURCE}" != "community" ]; then
+if [ "${IS_OPENSHIFT}" == "true" ] && [ "${CATALOG_SOURCE}" != "redhat" ] && [ "${CATALOG_SOURCE}" != "community" ]; then
   errormsg "The OpenShift catalog source must be one of 'redhat' or 'community' but was [${CATALOG_SOURCE}]"
   exit 1
 fi

@@ -1,3 +1,4 @@
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -29,8 +30,9 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "Payment error rate exceeding threshold"
-            description: "Payment error rate is {{ $value | printf \"%.2f\" }}%, which exceeds the 3% threshold."
+            summary: Payment error rate exceeding threshold
+            description: Payment error rate is {{ $value | printf "%.2f" }}%, which
+              exceeds the 3% threshold.
         - alert: PaymentErrorRateHigh
           expr: |
             sum(rate(http_requests_total{namespace="payments", code=~"5.."}[1m]))
@@ -39,5 +41,6 @@ spec:
           labels:
             severity: critical
           annotations:
-            summary: "Payment error rate critical"
-            description: "Payment error rate is {{ $value | printf \"%.2f\" }}%, which exceeds the 15% threshold."
+            summary: Payment error rate critical
+            description: Payment error rate is {{ $value | printf "%.2f" }}%, which
+              exceeds the 15% threshold.

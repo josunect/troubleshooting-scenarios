@@ -60,7 +60,7 @@ install_kiali_cr() {
   infomsg "Installing the Kiali CR after CRD has been established"
   wait_for_cluster_crd "kialis.kiali.io" "Kiali Operator" "${INSTALL_ISTIO_CRD_WAIT_SECONDS:-720}"
 
-  if ! ${OC} get namespace ${control_plane_namespace} >& /dev/null; then
+  if ! ${OC} get namespace "${control_plane_namespace}" >&/dev/null; then
     errormsg "Control plane namespace does not exist [${control_plane_namespace}]"
     exit 1
   fi
@@ -100,9 +100,9 @@ install_ossmconsole_cr() {
     return 1
   fi
 
-  if ! ${OC} get namespace ${ossmconsole_namespace} >& /dev/null; then
+  if ! ${OC} get namespace "${ossmconsole_namespace}" >&/dev/null; then
     infomsg "Creating OSSMConsole plugin namespace: ${ossmconsole_namespace}"
-    ${OC} create namespace ${ossmconsole_namespace}
+    ${OC} create namespace "${ossmconsole_namespace}"
   fi
 
   cat <<EOM | ${OC} apply -f -
@@ -169,8 +169,12 @@ ossm_kiali_semver_ge() {
   local a1=0 a2=0 a3=0 b1=0 b2=0 b3=0
   IFS='.' read -r a1 a2 a3 <<<"${a}"
   IFS='.' read -r b1 b2 b3 <<<"${b}"
-  a1="${a1:-0}"; a2="${a2:-0}"; a3="${a3:-0}"
-  b1="${b1:-0}"; b2="${b2:-0}"; b3="${b3:-0}"
+  a1="${a1:-0}"
+  a2="${a2:-0}"
+  a3="${a3:-0}"
+  b1="${b1:-0}"
+  b2="${b2:-0}"
+  b3="${b3:-0}"
   if [ "${a1}" -gt "${b1}" ]; then return 0; fi
   if [ "${a1}" -lt "${b1}" ]; then return 1; fi
   if [ "${a2}" -gt "${b2}" ]; then return 0; fi
@@ -284,13 +288,15 @@ ossm_install_kiali_support() {
 delete_kiali_operator() {
   local abort_operation="false"
   for cr in \
-    $(${OC} get kiali --all-namespaces -o custom-columns=K:.kind,NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' ) \
-    $(${OC} get ossmconsole --all-namespaces -o custom-columns=K:.kind,NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-  do
+    $(${OC} get kiali --all-namespaces -o custom-columns=K:.kind,NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g') \
+    $(${OC} get ossmconsole --all-namespaces -o custom-columns=K:.kind,NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
     abort_operation="true"
-    local res_kind=$(echo ${cr} | cut -d: -f1)
-    local res_namespace=$(echo ${cr} | cut -d: -f2)
-    local res_name=$(echo ${cr} | cut -d: -f3)
+    local res_kind
+    res_kind=$(echo "${cr}" | cut -d: -f1)
+    local res_namespace
+    res_namespace=$(echo "${cr}" | cut -d: -f2)
+    local res_name
+    res_name=$(echo "${cr}" | cut -d: -f3)
     errormsg "A [${res_kind}] CR named [${res_name}] in namespace [${res_namespace}] still exists. It must be deleted first."
   done
   if [ "${abort_operation}" == "true" ]; then
@@ -299,49 +305,56 @@ delete_kiali_operator() {
   fi
 
   infomsg "Unsubscribing from the Kiali Operator"
-  ${OC} delete subscription --ignore-not-found=true --namespace ${OLM_OPERATORS_NAMESPACE} my-kiali
+  ${OC} delete subscription --ignore-not-found=true --namespace "${OLM_OPERATORS_NAMESPACE}" my-kiali
 
   infomsg "Deleting OLM CSVs which uninstalled the Kiali Operator and its related resources"
-  for csv in $(${OC} get csv --all-namespaces --no-headers -o custom-columns=NS:.metadata.namespace,N:.metadata.name | sed 's/  */:/g' | grep kiali-operator)
-  do
-    ${OC} delete csv -n $(echo -n $csv | cut -d: -f1) $(echo -n $csv | cut -d: -f2)
+  for csv in $(${OC} get csv --all-namespaces --no-headers -o custom-columns=NS:.metadata.namespace,N:.metadata.name | sed 's/  */:/g' | grep kiali-operator); do
+    ${OC} delete csv -n "$(echo -n "${csv}" | cut -d: -f1)" "$(echo -n "${csv}" | cut -d: -f2)"
   done
 
   infomsg "Delete Kiali CRDs"
-  ${OC} get crds -o name | grep '.*\.kiali\.io' | xargs -r -n 1 ${OC} delete
+  ${OC} get crds -o name | grep '.*\.kiali\.io' | xargs -r -n 1 "${OC}" delete
 }
 
 delete_kiali_cr() {
   infomsg "Deleting all Kiali CRs in the cluster"
-  for cr in $(${OC} get kiali --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-  do
-    local res_namespace=$(echo ${cr} | cut -d: -f1)
-    local res_name=$(echo ${cr} | cut -d: -f2)
-    ${OC} delete -n ${res_namespace} kiali ${res_name}
+  for cr in $(${OC} get kiali --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+    local res_namespace
+    res_namespace=$(echo "${cr}" | cut -d: -f1)
+    local res_name
+    res_name=$(echo "${cr}" | cut -d: -f2)
+    ${OC} delete -n "${res_namespace}" kiali "${res_name}"
   done
 }
 
 delete_ossmconsole_cr() {
   infomsg "Deleting all OSSMConsole CRs in the cluster"
-  for cr in $(${OC} get ossmconsole --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-  do
-    local res_namespace=$(echo ${cr} | cut -d: -f1)
-    local res_name=$(echo ${cr} | cut -d: -f2)
-    ${OC} delete -n ${res_namespace} ossmconsole ${res_name}
+  for cr in $(${OC} get ossmconsole --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+    local res_namespace
+    res_namespace=$(echo "${cr}" | cut -d: -f1)
+    local res_name
+    res_name=$(echo "${cr}" | cut -d: -f2)
+    ${OC} delete -n "${res_namespace}" ossmconsole "${res_name}"
   done
 }
 
 status_kiali_operator() {
   infomsg ""
   infomsg "===== KIALI OPERATOR SUBSCRIPTION"
-  local sub_name="$(${OC} get subscriptions -n ${OLM_OPERATORS_NAMESPACE} -o name my-kiali 2>/dev/null)"
-  if [ ! -z "${sub_name}" ]; then
+  local sub_name
+  sub_name="$(${OC} get subscriptions -n "${OLM_OPERATORS_NAMESPACE}" -o name my-kiali 2>/dev/null)"
+  if [ -n "${sub_name}" ]; then
     infomsg "A Subscription exists for the Kiali Operator"
-    ${OC} get --namespace ${OLM_OPERATORS_NAMESPACE} ${sub_name}
+    ${OC} get --namespace "${OLM_OPERATORS_NAMESPACE}" "${sub_name}"
     infomsg ""
     infomsg "===== KIALI OPERATOR POD"
-    local op_name="$(${OC} get pod -n ${OLM_OPERATORS_NAMESPACE} -o name | grep kiali)"
-    [ ! -z "${op_name}" ] && ${OC} get --namespace ${OLM_OPERATORS_NAMESPACE} ${op_name} || infomsg "There is no pod"
+    local op_name
+    op_name="$(${OC} get pod -n "${OLM_OPERATORS_NAMESPACE}" -o name | grep kiali)"
+    if [ -n "${op_name}" ]; then
+      ${OC} get --namespace "${OLM_OPERATORS_NAMESPACE}" "${op_name}"
+    else
+      infomsg "There is no pod"
+    fi
   else
     infomsg "There is no Subscription for the Kiali Operator"
   fi
@@ -355,16 +368,17 @@ status_kiali_cr() {
     ${OC} get kiali --all-namespaces
     infomsg ""
     for cr in \
-      $(${OC} get kiali --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-    do
-      local res_namespace=$(echo ${cr} | cut -d: -f1)
-      local res_name=$(echo ${cr} | cut -d: -f2)
+      $(${OC} get kiali --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+      local res_namespace
+      res_namespace=$(echo "${cr}" | cut -d: -f1)
+      local res_name
+      res_name=$(echo "${cr}" | cut -d: -f2)
       infomsg "Kiali [${res_name}] namespace [${res_namespace}]:"
-      ${OC} get pods --namespace ${res_namespace} -l app.kubernetes.io/name=kiali
+      ${OC} get pods --namespace "${res_namespace}" -l app.kubernetes.io/name=kiali
       infomsg ""
       infomsg "Kiali Web Console can be accessed here: "
       if [ "${IS_OPENSHIFT}" == "true" ]; then
-        ${OC} get route -n ${res_namespace} -l app.kubernetes.io/name=kiali -o jsonpath='https://{..spec.host}{"\n"}'
+        ${OC} get route -n "${res_namespace}" -l app.kubernetes.io/name=kiali -o jsonpath='https://{..spec.host}{"\n"}'
       else
         infomsg "Cannot determine where the UI is on non-OpenShift clusters."
       fi
@@ -382,12 +396,13 @@ status_ossmconsole_cr() {
     ${OC} get ossmconsole --all-namespaces
     infomsg ""
     for cr in \
-      $(${OC} get ossmconsole --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g' )
-    do
-      local res_namespace=$(echo ${cr} | cut -d: -f1)
-      local res_name=$(echo ${cr} | cut -d: -f2)
+      $(${OC} get ossmconsole --all-namespaces -o custom-columns=NS:.metadata.namespace,N:.metadata.name --no-headers | sed 's/  */:/g'); do
+      local res_namespace
+      res_namespace=$(echo "${cr}" | cut -d: -f1)
+      local res_name
+      res_name=$(echo "${cr}" | cut -d: -f2)
       infomsg "OSSMConsole [${res_name}] namespace [${res_namespace}]:"
-      ${OC} get pods --namespace ${res_namespace} -l app.kubernetes.io/name=ossmconsole
+      ${OC} get pods --namespace "${res_namespace}" -l app.kubernetes.io/name=ossmconsole
       infomsg ""
     done
   else
@@ -403,7 +418,7 @@ wait_for_cluster_crd() {
   local max_wait="${3:-720}"
   local waited=0
   infomsg "Waiting for CRD [${crd_name}] (${human})..."
-  while ! ${OC} get crd "${crd_name}" >& /dev/null; do
+  while ! ${OC} get crd "${crd_name}" >&/dev/null; do
     if [ "${waited}" -ge "${max_wait}" ]; then
       errormsg "Timeout after ${max_wait}s waiting for CRD [${crd_name}] (${human}). Check the operator Subscription in ${OLM_OPERATORS_NAMESPACE} and catalog source."
       exit 1

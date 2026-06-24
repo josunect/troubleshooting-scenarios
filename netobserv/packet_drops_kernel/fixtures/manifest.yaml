@@ -1,3 +1,4 @@
+---
 # High-rate UDP between pods to encourage kernel-level packet loss (PacketDrop feature).
 apiVersion: v1
 kind: Namespace
@@ -34,8 +35,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          args: ["-s"]
+              drop: [ALL]
+          args: [-s]
           ports:
             - containerPort: 5201
               protocol: UDP
@@ -94,8 +95,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          command: ["/bin/sh", "-c"]
+              drop: [ALL]
+          command: [/bin/sh, -c]
           args:
             - |
               echo "Starting sustained UDP load to iperf-server (may cause kernel drops)"

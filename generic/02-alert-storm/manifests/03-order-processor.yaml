@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,11 +27,11 @@ spec:
               name: http
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "75m"
+              memory: 128Mi
+              cpu: 75m
             limits:
-              memory: "256Mi"
-              cpu: "150m"
+              memory: 256Mi
+              cpu: 150m
           livenessProbe:
             httpGet:
               path: /health

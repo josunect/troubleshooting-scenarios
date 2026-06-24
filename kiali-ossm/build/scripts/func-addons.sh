@@ -25,9 +25,9 @@ install_addon() {
 
   case "$1" in
     prometheus) install_addon_prometheus ;;
-    jaeger)     install_addon_jaeger     ;;
-    grafana)    install_addon_grafana    ;;
-    loki)       install_addon_loki       ;;
+    jaeger) install_addon_jaeger ;;
+    grafana) install_addon_grafana ;;
+    loki) install_addon_loki ;;
     *)
       errormsg "Unsupported addon - cannot install [$1]"
       return 1
@@ -45,9 +45,9 @@ install_addon() {
 delete_addon() {
   case "$1" in
     prometheus) delete_addon_prometheus ;;
-    jaeger)     delete_addon_jaeger     ;;
-    grafana)    delete_addon_grafana    ;;
-    loki)       delete_addon_loki       ;;
+    jaeger) delete_addon_jaeger ;;
+    grafana) delete_addon_grafana ;;
+    loki) delete_addon_loki ;;
     *)
       errormsg "Unsupported addon - cannot remove [$1]"
       return 1
@@ -199,7 +199,7 @@ download_istio_addon_yaml() {
 # $1 = file path where the yaml is found
 apply_istio_addon_yaml() {
   local yaml_file="$1"
-  if ! (cat ${yaml_file} | sed "s/istio-system/${CONTROL_PLANE_NAMESPACE}/g" | ${OC} apply -n ${CONTROL_PLANE_NAMESPACE} -f -); then
+  if ! (cat "${yaml_file}" | sed "s/istio-system/${CONTROL_PLANE_NAMESPACE}/g" | ${OC} apply -n "${CONTROL_PLANE_NAMESPACE}" -f -); then
     errormsg "Failed to apply Istio addon [${yaml_file}]"
     return 1
   fi
@@ -208,7 +208,7 @@ apply_istio_addon_yaml() {
 # $1 = file path where the yaml is found
 delete_istio_addon_yaml() {
   local yaml_file="$1"
-  cat ${yaml_file} | sed "s/istio-system/${CONTROL_PLANE_NAMESPACE}/g" | ${OC} delete --ignore-not-found=true -n ${CONTROL_PLANE_NAMESPACE} -f -
+  cat "${yaml_file}" | sed "s/istio-system/${CONTROL_PLANE_NAMESPACE}/g" | ${OC} delete --ignore-not-found=true -n "${CONTROL_PLANE_NAMESPACE}" -f -
 }
 
 # $1 - name of the service that will be exposed via Route if OpenShift or via LoadBalancer otherwise
@@ -225,10 +225,10 @@ expose_service() {
     fi
   else
     # if the addon yaml already created the service, just change the type to LoadBalancer
-    if ${OC} get service ${service_name} --namespace ${CONTROL_PLANE_NAMESPACE} &> /dev/null; then
-      ${OC} patch service ${service_name} --namespace ${CONTROL_PLANE_NAMESPACE} -p '{"spec": {"type": "LoadBalancer"}}'
+    if ${OC} get service "${service_name}" --namespace "${CONTROL_PLANE_NAMESPACE}" &>/dev/null; then
+      ${OC} patch service "${service_name}" --namespace "${CONTROL_PLANE_NAMESPACE}" -p '{"spec": {"type": "LoadBalancer"}}'
     else
-      ${OC} expose service ${service_name} --namespace ${CONTROL_PLANE_NAMESPACE} --type LoadBalancer
+      ${OC} expose service "${service_name}" --namespace "${CONTROL_PLANE_NAMESPACE}" --type LoadBalancer
     fi
   fi
 }

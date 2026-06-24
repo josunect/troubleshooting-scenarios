@@ -3,7 +3,7 @@ set -euo pipefail
 
 FIXTURE_DIR="$(cd "$(dirname "$0")/fixtures" && pwd)"
 NAMESPACE="bookinfo"
-WAIT_SECONDS=${WAIT_SECONDS:-180}  # override with: make all WAIT_SECONDS=60
+WAIT_SECONDS=${WAIT_SECONDS:-180} # override with: make all WAIT_SECONDS=60
 KUBECTL="${KUBECTL:-oc}"
 
 echo "Removing invalid Istio object manifests…"

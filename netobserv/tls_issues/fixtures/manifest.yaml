@@ -1,3 +1,4 @@
+---
 # TLS server with self-signed cert; client performs HTTPS handshakes (TLS/connection errors on mismatch).
 # tls-server-cert Secret is created by setup.sh (openssl) — not stored in git.
 apiVersion: v1
@@ -116,8 +117,8 @@ spec:
             runAsNonRoot: true
             runAsUser: 65534
             capabilities:
-              drop: ["ALL"]
-          command: ["/bin/sh", "-c"]
+              drop: [ALL]
+          command: [/bin/sh, -c]
           args:
             - |
               while true; do

@@ -8,10 +8,15 @@
 
 set -u
 
-SCRIPT_ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
-cd "${SCRIPT_ROOT}"
+SCRIPT_ROOT="$(
+  cd "$(dirname "$0")" || exit
+  pwd -P
+)"
+cd "${SCRIPT_ROOT}" || exit
 
+# shellcheck disable=SC1091
 source "${SCRIPT_ROOT}/func-log.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_ROOT}/func-netobserv.sh"
 
 netobserv_install_require_opt_value() {
@@ -34,22 +39,73 @@ while [[ $# -gt 0 ]]; do
   key="$1"
   case $key in
 
-    install)              _CMD="install"              ; shift ;;
-    install-operator)     _CMD="install-operator"     ; shift ;;
-    install-flowcollector) _CMD="install-flowcollector" ; shift ;;
-    delete-operator)      _CMD="delete-operator"      ; shift ;;
-    delete-flowcollector) _CMD="delete-flowcollector" ; shift ;;
-    status)               _CMD="status"               ; shift ;;
+    install)
+      _CMD="install"
+      shift
+      ;;
+    install-operator)
+      _CMD="install-operator"
+      shift
+      ;;
+    install-flowcollector)
+      _CMD="install-flowcollector"
+      shift
+      ;;
+    delete-operator)
+      _CMD="delete-operator"
+      shift
+      ;;
+    delete-flowcollector)
+      _CMD="delete-flowcollector"
+      shift
+      ;;
+    status)
+      _CMD="status"
+      shift
+      ;;
 
-    -c|--client)                    netobserv_install_require_opt_value "${key}" "${2:-}"; OC="${2}" ; shift;shift ;;
-    -cs|--catalog-source)           netobserv_install_require_opt_value "${key}" "${2:-}"; CATALOG_SOURCE="${2}" ; shift;shift ;;
-    -ch|--channel)                   netobserv_install_require_opt_value "${key}" "${2:-}"; NETOBSERV_CHANNEL="${2}" ; shift;shift ;;
-    -fc|--flowcollector-file)        netobserv_install_require_opt_value "${key}" "${2:-}"; FLOWCOLLECTOR_FILE="${2}" ; shift;shift ;;
-    -ns|--namespace)                 netobserv_install_require_opt_value "${key}" "${2:-}"; NETOBSERV_NAMESPACE="${2}" ; shift;shift ;;
-    -ons|--operator-namespace)       netobserv_install_require_opt_value "${key}" "${2:-}"; NETOBSERV_OPERATOR_NAMESPACE="${2}" ; shift;shift ;;
-    -don|--delete-operator-namespace) NETOBSERV_DELETE_OPERATOR_NAMESPACE="yes" ; shift ;;
+    -c | --client)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      OC="${2}"
+      shift
+      shift
+      ;;
+    -cs | --catalog-source)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      CATALOG_SOURCE="${2}"
+      shift
+      shift
+      ;;
+    -ch | --channel)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      export NETOBSERV_CHANNEL="${2}"
+      shift
+      shift
+      ;;
+    -fc | --flowcollector-file)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      FLOWCOLLECTOR_FILE="${2}"
+      shift
+      shift
+      ;;
+    -ns | --namespace)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      NETOBSERV_NAMESPACE="${2}"
+      shift
+      shift
+      ;;
+    -ons | --operator-namespace)
+      netobserv_install_require_opt_value "${key}" "${2:-}"
+      NETOBSERV_OPERATOR_NAMESPACE="${2}"
+      shift
+      shift
+      ;;
+    -don | --delete-operator-namespace)
+      export NETOBSERV_DELETE_OPERATOR_NAMESPACE="yes"
+      shift
+      ;;
 
-    -h|--help)
+    -h | --help)
       cat <<HELPMSG
 
 $0 [option...] command
@@ -111,12 +167,12 @@ else
 fi
 
 if [ "${IS_OPENSHIFT}" = "true" ]; then
-  if ! ${OC} whoami >& /dev/null; then
+  if ! ${OC} whoami >&/dev/null; then
     errormsg "Not logged in. Run '${OC} login' and retry."
     exit 1
   fi
 elif [ "$(basename -- "${OC}")" = "oc" ]; then
-  if ! ${OC} whoami >& /dev/null; then
+  if ! ${OC} whoami >&/dev/null; then
     errormsg "Not logged in. Run '${OC} login' and retry."
     exit 1
   fi
