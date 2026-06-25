@@ -12,6 +12,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to add a new eval suite.
 | [netobserv/](netobserv/) | Network observability using the NetObserv MCP toolset |
 | [generic/](generic/) | Standalone fault-injection scenarios (not using the eval framework) |
 
+## Requirements
+
+- OpenShift 4.x cluster accessible via `oc login`
+- `OPENAI_API_KEY` exported (used for OLS credentials and the judge LLM)
+- Python 3.11, 3.12, or 3.13
+
 ## Quick start
 
 ```bash
@@ -44,17 +50,13 @@ make check_mesh_status-eval
 2. Disconnects OLS from the MCP server
 3. Removes the MCP server namespace
 
-OLS itself is **not** removed by suite cleanup — it's shared across suites. To remove OLS and the local venv:
+## Uninstalling OLS
+
+Suite cleanup does not remove OLS, since it's shared across suites. To remove the OLS operator and the local venv entirely, run from the repo root:
 
 ```bash
-make cleanup       # from repo root
+make cleanup
 ```
-
-## Requirements
-
-- OpenShift 4.x cluster accessible via `oc login`
-- `OPENAI_API_KEY` exported (used for OLS credentials and the judge LLM)
-- Python 3.11, 3.12, or 3.13
 
 ## Using a cluster Route instead of port-forward
 
