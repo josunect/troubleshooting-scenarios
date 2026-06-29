@@ -73,8 +73,9 @@
   setup_script: ./invalid_istio_object/setup.sh
   cleanup_script: ./invalid_istio_object/cleanup.sh
 
-# ── fix_bookinfo_routing ──────────────────────────────────────────────────────
-- conversation_group_id: fix_bookinfo_routing
+# ── diagnose_bookinfo_routing ─────────────────────────────────────────────────
+- conversation_group_id: diagnose_bookinfo_routing
+  tag: diagnose_bookinfo_routing
   description: "reviews-v3 has weight 0 so never gets traffic. Agent investigates and identifies the routing issue."
 
   turns:
@@ -97,9 +98,9 @@
   setup_script: ./fix_bookinfo_routing/setup.sh
   cleanup_script: ./fix_bookinfo_routing/cleanup.sh
 
-# ── fix_bookinfo_fault_injection ──────────────────────────────────────────────
-- conversation_group_id: fix_bookinfo_fault_injection
-  tag: fault_injection_bookinfo
+# ── diagnose_bookinfo_fault_injection ────────────────────────────────────────
+- conversation_group_id: diagnose_bookinfo_fault_injection
+  tag: diagnose_bookinfo_fault_injection
   description: "A 100% fault injection on ratings causes 503 errors. Agent investigates and identifies the root cause."
 
   turns:
