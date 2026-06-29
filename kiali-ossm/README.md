@@ -40,7 +40,7 @@ make check_istio_objects_status-eval
 
 ### `diagnose_bookinfo_routing`
 
-`reviews-v3` has weight 0 in the `reviews` VirtualService, so the product page never shows red stars. The agent must identify the zero-weight subset and patch the VirtualService.
+`reviews-v3` has weight 0 in the `reviews` VirtualService, so the product page never shows red stars. The agent should identify the zero-weight subset and describe the likely routing correction.
 
 ```bash
 make diagnose_bookinfo_routing-eval
@@ -48,7 +48,7 @@ make diagnose_bookinfo_routing-eval
 
 ### `diagnose_bookinfo_fault_injection`
 
-A 100% fault-injection abort (HTTP 503) on the `ratings` VirtualService. The agent must find the abort rule and offer to remove it.
+A 100% fault-injection abort (HTTP 503) on the `ratings` VirtualService. The agent should identify the abort rule as the root cause and explain what would restore normal service.
 
 ```bash
 make diagnose_bookinfo_fault_injection-eval

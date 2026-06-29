@@ -88,10 +88,8 @@
         the reviews VirtualService routes 0% of traffic to subset v3 (weight: 0),
         meaning reviews-v3 — the version that renders red stars — never receives
         requests. All workload pods should be confirmed as running and healthy. The
-        agent should explain that fixing the issue requires patching the reviews
-        VirtualService to assign a non-zero weight to v3 (either 100% to v3 or
-        distributing across v1/v2/v3), and that doing so would allow the product
-        page to show red stars.
+        agent may note that assigning a non-zero weight to v3 (either 100% to v3 or
+        distributing across v1/v2/v3) would allow the product page to show red stars.
       turn_metrics:
         - custom:answer_correctness
 
@@ -119,9 +117,8 @@
         for ratings is correctly defined and not contributing to the issue. It should
         identify the 100% fault injection abort as the root cause of the 503 errors
         seen on the product page, and may note this is typically used for chaos or
-        resilience testing. The agent should explain that the fix would involve
-        removing the abort block or setting its percentage to 0 to restore normal
-        service, and may provide the corrected VirtualService spec as a reference.
+        resilience testing. The agent may note that removing the abort block or
+        setting its percentage to 0 would restore normal service.
       turn_metrics:
         - custom:answer_correctness
 
