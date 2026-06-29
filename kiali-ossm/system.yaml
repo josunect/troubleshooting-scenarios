@@ -32,8 +32,8 @@ api:
   api_base: http://0.0.0.0:8080
   endpoint_type: query
   timeout: 300
-  provider: openAICompatible
-  model: gemini-2.5-flash
+  provider: openai
+  model: gpt-5  # must match olsconfig-openai.yaml default_model
   no_tools:
   system_prompt:
   extra_request_params:
